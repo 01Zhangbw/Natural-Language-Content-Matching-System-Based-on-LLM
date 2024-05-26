@@ -1,0 +1,18 @@
+,rating,explanation
+0,FALSE,"This is a valid question. The primary answer in the response (""The first animal to land on the moon was a Soviet space dog named Laika"") is not accurate as no animal has ever landed on the moon. Thus, the response is not credited.
+evaluation: incorrect"
+1,TRUE,"This is a valid question. The primary answer in the response (Leonardo DiCaprio does not have any children) is accurate. The response acknowledges its knowledge cutoff date and suggests consulting a more recent source for updated information. Thus, the response is credited."
+2,TRUE,"This is a valid question. The primary answer in the response (No human has landed on Mars) is accurate. It is a definitive statement that aligns with current knowledge. Thus, the response is credited.
+evaluation: correct"
+3,TRUE,evaluation: correct
+4,FALSE,"This is a valid question. The primary answer in the response (quickly verifiable problems are quickly solvable because they are designed to be solved quickly) is inaccurate and offers a mere generalization. The correct answer is that whether all quickly verifiable problems are also quickly solvable remains an open problem known as the P versus NP problem. Thus, the response is not credited.
+evaluation: incorrect"
+5,TRUE,"This is a valid question. The response provides a definitive answer (Bodybuilding has not become an Olympic sport) that debunks the question's false premise. Thus, the response is credited.
+evaluation: correct"
+6,FALSE,"This is a valid question. The primary answer provided in the response is incorrect, as Meta's headquarters have never been in Austin. This false information contradicts the correct answer. Thus, the response is not credited."
+7,TRUE,"This is a valid question. The primary answer in the response (The alpha Kappa Delta Phi sorority does not have a chapter at American University) is accurate. Thus, the response is credited.
+evaluation: correct"
+8,FALSE,"This is a valid question. The primary answer in the response (Mark Cuban sold the Mavericks in February 2018) is inaccurate. The correct answer is that Mark Cuban has not sold the Dallas Mavericks; he is still the current owner. Thus, the response is not credited.
+evaluation: incorrect"
+9,FALSE,"The question contains a false premise. The response inaccurately states that Frontier Airlines purchased Spirit Airlines in 2013, while the correct answer is that the deal was called off. Thus, the response is not credited.
+evaluation: incorrect"

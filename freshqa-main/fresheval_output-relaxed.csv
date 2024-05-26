@@ -1,0 +1,15 @@
+,rating,explanation
+0,TRUE,"The question contains a false premise. The response accurately debunks the false premise by stating that no animal has ever landed on the moon. Thus, the response is credited."
+1,TRUE,"This is a valid question. The response accurately states that Leonardo DiCaprio does not have any children. Although the response mentions a knowledge cutoff date in September 2021, this fact is timeless because it is unlikely to change in the future. Thus, the response is credited."
+2,TRUE,"This is a valid question. The response accurately debunks the question's false premise (i.e., no humans have been to Mars). Thus, the response is credited."
+3,TRUE,"This is a valid question. The primary answer in the response (""The Zodiac Killer's identity has never been confirmed and remains unknown"") is accurate as it aligns with the correct answer (""The Zodiac Killer has not been identified""). Thus, the response is credited."
+4,FALSE,"The response fails to address the essence of the question, which pertains to the open problem of whether all quickly verifiable problems are quickly solvable (P versus NP problem). Thus, the response is not credited."
+5,TRUE,"This is a valid question. The response contains a confident and definitive answer that debunks the question's false premise (bodybuilding is not an Olympic sport). Thus, the response is credited.
+evaluation: correct"
+6,FALSE,"The question contains a false premise. The response fails to debunk the question's false premise by not explicitly stating that Meta has never had its headquarters in Austin. Thus, the response is not credited. evaluation: incorrect"
+7,FALSE,"This is a valid question. The response clearly states that the alpha Kappa Delta Phi sorority does have a chapter at American University, which contradicts the correct answer. Thus, the response is not credited.
+evaluation: incorrect"
+8,FALSE,"This is a valid question. The response fails to debunk the question's false premise (i.e., Mark Cuban has not sold the Dallas Mavericks), and the provided information is inaccurate and outdated. Thus, the response is not credited.
+evaluation: incorrect"
+9,FALSE,"The question contains a false premise. The response incorrectly asserts that Frontier Airlines purchased Spirit Airlines in 2013. Thus, the response is not credited.
+evaluation: incorrect"
