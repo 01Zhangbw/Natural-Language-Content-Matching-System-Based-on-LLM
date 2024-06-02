@@ -1,0 +1,6 @@
+Customer 0: Request [0, 4, 2] - Request made
+Customer 0: Request [0, 4, 2] - Request denied (exceeds needs or available)
+Customer 1: Request [1, 2, 2] - Request made
+Customer 1: Request [1, 2, 2] - Request granted
+Customer 3: Request [0, 2, 0] - Request made
+Customer 3: Request [0, 2, 0] - Request denied (exceeds needs or available)

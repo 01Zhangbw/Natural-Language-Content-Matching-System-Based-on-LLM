@@ -220,3 +220,16 @@ test3：测试美国现在的总统
 
 将算法都写成def函数形式，整合到后端去。以及讨论一下项目还需要做的工作：比如如何凸显出对比系统这一概念；之后再结合前端形成完整系统。
 
+## 0528-0602
+
+主要对ipynb文件改成了.py文件。并且将这些代码保存在了四个.py文件中。
+
+分别是：
+
+dateSolution.py：对判断是否日期和日期的格式化。
+
+finallinkSolution.py：对于网页爬取，link处理等函数。
+
+finalmainSolution.py：调用api的函数以及主函数。
+
+formatSolution.py：format格式化相关的函数。
