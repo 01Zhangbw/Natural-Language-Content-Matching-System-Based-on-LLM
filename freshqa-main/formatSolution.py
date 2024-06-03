@@ -1,4 +1,40 @@
 
+import pandas as pd
+from finalmainSolution import format_date
+# from google.colab import files
+import ipywidgets as widgets
+from IPython.display import display
+
+from openai import OpenAI
+import tabulate
+import textwrap
+
+from serpapi import GoogleSearch
+
+import datetime
+import pytz
+
+from serpapi import GoogleSearch
+from openai import OpenAI
+# 简化链接
+# 解析网页
+def extract_source_webpage(link):
+    # Extract source webpage
+    return (
+        link.strip()
+        .replace("https://www.", "")
+        .replace("http://www.", "")
+        .replace("https://", "")
+        .replace("http://", "")
+        .split("/")[0]
+    )
+
+def simplify_displayed_link(displayed_link):
+    # Simplify displayed link
+    if displayed_link is None:
+        return None
+    return extract_source_webpage(displayed_link.split(' › ')[0])
+
 # 格式化搜索结果
 def format_search_results(search_data, title_field=None, highlight_field=None):
     # Standardize search results as shown in Figure 3 (left) in the paper

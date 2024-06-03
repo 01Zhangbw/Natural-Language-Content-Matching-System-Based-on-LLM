@@ -1,44 +1,54 @@
-import os
-import re
-import time
 import datetime
 import pytz
-import dateutil
-import requests
-import json
-import csv
+from serpapi import GoogleSearch
+from openai import OpenAI
 
-from dateSolution import is_date
-from dateSolution import format_date
-from finallinkSolution import extract_source_webpage
-from finallinkSolution import simplify_displayed_link
-from finallinkSolution import exact_link_url
-from formatSolution import format_search_results
-from formatSolution import format_knowledge_graph
-from formatSolution import format_questions_and_answers
+
 from formatSolution import freshprompt_format
-
-import pandas as pd
-
-# from google.colab import files
-import ipywidgets as widgets
-from IPython.display import display
-
-from openai import OpenAI
-import tabulate
-import textwrap
-
-from serpapi import GoogleSearch
-
+import dateutil
 import datetime
 import pytz
+import re
 
-from serpapi import GoogleSearch
-from openai import OpenAI
+
+# 判断是否为日期
+def is_date(string, fuzzy=False):
+    # Parse a string into a date and check its validity
+    try:
+        dateutil.parser.parse(string, fuzzy=fuzzy)
+        return True
+    except ValueError:
+        return False
+
+# 格式化日期
 
 current_date = datetime.datetime.now(
     pytz.timezone("America/Los_Angeles")
 ).strftime("%B %d, %Y")
+def format_date(d):
+    # Standardize the date format for each search result
+    date = dateutil.parser.parse(current_date, fuzzy=True).strftime("%b %d, %Y")
+    if d is None:
+        return None
+
+    for t in ["second", "minute", "hour"]:
+        if f"{t} ago" in d or f"{t}s ago" in d:
+            return date
+
+    t = "day"
+    if f"{t} ago" in d or f"{t}s ago" in d:
+        n_days = int(re.search("(\d+) days? ago", d).group(1))
+        return (
+            datetime.datetime.strptime(date, "%b %d, %Y")
+            - datetime.timedelta(days=n_days)
+        ).strftime("%b %d, %Y")
+
+    try:
+        return dateutil.parser.parse(d, fuzzy=True).strftime("%b %d, %Y")
+    except ValueError:
+        for x in d.split():
+            if is_date(x):
+                return dateutil.parser.parse(x, fuzzy=True).strftime("%b %d, %Y")
 
 # 设置API-KEY
 openai_api_key = "sk-JnWHmZFfrx9mWDahm7pJhfDoQNON5zDtm4jabuapWyp09yll"  # @param {type:"string"}
@@ -111,7 +121,7 @@ def call_llm_api(prompt, model, temperature, max_tokens, chat_completions=True):
 
 # 调用搜索引擎
 def call_search_engine(query):
-  params = {
+    params = {
     "q": query,
     # "location": "California, United States",
     "hl": "en",
@@ -121,11 +131,11 @@ def call_search_engine(query):
 
   }
 
-  search = GoogleSearch(params)
-  return search.get_dict()
+    search = GoogleSearch(params)
+    return search.get_dict()
 
 # 后面的针对用户提的问题的prompt就直接拼接在这个demo_prompts后就好
-demo_prompts = """
+freshprompt_demo = """
 query: What year is considered Albert Einstein's annus mirabilis?
 
 source: quora.com
@@ -212,92 +222,11 @@ answer: As of today May 27, 2024, the most up-to-date and relevant information r
 
 
 
-'''
-demo_questions = [
-    "What year is considered Albert Einstein's annus mirabilis?",
-    "Which photographer took the most expensive photograph in the world?",
-    "How many days are left until the 2023 Grammy Awards?",
-    "How many years ago did the Boxing Day Tsunami happen?",
-    (
-        "When did Amazon become the first publicly traded company to exceed a"
-        " market value of $3 trillion?"
-    ),
-]
-
-concise_demo_reasonings_and_answers = [
-    (
-        "1905 is considered Albert Einstein's annus mirabilis, his miraculous"
-        " year."
-    ),
-    (
-        'The most expensive photograph in the world is "Le Violon d\'Ingres".'
-        " The photograph was created by Man Ray."
-    ),
-    (
-        "The 2023 Grammy Awards ceremony was held on February 5, 2023. Thus,"
-        " the ceremony has already taken place."
-    ),
-    (
-        "The disaster occurred on December 26, 2004. Thus, it happened 19 years"
-        " ago."
-    ),
-    "Amazon's market capitalization has never exceeded $3 trillion.",
-]
-
-verbose_demo_reasonings_and_answers = [
-    (
-        "In the year of 1905, Albert Einstein published four groundbreaking"
-        " papers that revolutionized scientific understanding of the universe."
-        " Thus, scientists call 1905 Albert Einstein's annus mirabilis — his"
-        " year of miracles."
-    ),
-    (
-        "Man Ray's famed \"Le Violon d'Ingres\" became the most expensive"
-        " photograph ever to sell at auction, sold for $12.4 million on May"
-        " 14th, 2022 at Christie's New York. The black and white image, taken"
-        " in 1924 by the American surrealist artist, transforms a woman's naked"
-        " body into a violin by overlaying the picture of her back with"
-        " f-holes. Thus, Man Ray is the photographer who took the most"
-        " expensive photograph in the world."
-    ),
-    (
-        "The 2023 Grammy Awards, officially known as the 65th Annual Grammy"
-        " Awards ceremony, was held in Los Angeles on February 5, 2023. Thus,"
-        " the event has already taken place."
-    ),
-    (
-        "The Boxing Day Tsunami refers to the 2004 Indian Ocean earthquake and"
-        " tsunami, which is one of the deadliest natural disasters in recorded"
-        " history, killing an estimated 230,000 people across 14 countries. The"
-        " disaster occurred on December 26, 2004, which is 19 years ago."
-    ),
-    (
-        "Amazon's market capitalization hit a peak of roughly $1.9 trillion in"
-        " July 2021. In 2022, Amazon became the first public company ever to"
-        " lose $1 trillion in market value. Thus, Amazon's market value has"
-        " never exceeded $3 trillion. In fact, Apple became the first publicly"
-        " traded U.S. company to exceed a market value of $3 trillion in"
-        " January 2022."
-    ),
-]
-'''
-
-prefix = (
-    f"\nanswer: As of today {current_date}, the most up-to-date and relevant"
-    " information regarding this query is as follows. "
-)
-
-concise_demo_reasonings_and_answers = [
-    prefix + x for x in concise_demo_reasonings_and_answers
-]
-verbose_demo_reasonings_and_answers = [
-    prefix + x for x in verbose_demo_reasonings_and_answers
-]
 
 #@title Retrieving search data for demonstration examples
 
 
-demo_search_data = [call_search_engine(q) for q in demo_questions]
+# demo_search_data = [call_search_engine(q) for q in demo_questions]
 
 # 调用 freshprompt 函数
 
@@ -318,32 +247,7 @@ def call_freshprompt(model, question, check_premise=False, verbose=False):
         num_related_questions = 2
         num_questions_and_answers = 2
         num_retrieved_evidences = 5
-
-    # 选择推理和回答示例的格式
-    if verbose:
-        demo_reasonings_and_answers = verbose_demo_reasonings_and_answers
-    else:
-        demo_reasonings_and_answers = concise_demo_reasonings_and_answers
-
-    # 生成示例提示
-    demo_prompts = []
-    for q, s, ra in zip(
-        demo_questions, demo_search_data, concise_demo_reasonings_and_answers
-    ):
-        demo_prompts.append(
-            freshprompt_format(
-                q,  # 示例问题
-                s,  # 搜索数据
-                ra,  # 推理和回答
-                num_organic_results,
-                num_related_questions,
-                num_questions_and_answers,
-                num_retrieved_evidences,
-            )
-        )
-
-    freshprompt_demo = ''.join(demo_prompts).strip()  # 将所有示例提示拼接成一个字符串
-
+    
     # 根据是否检查前提来设置后缀
     if check_premise:
         suffix = (
@@ -374,6 +278,18 @@ def call_freshprompt(model, question, check_premise=False, verbose=False):
     )
     return answer  # 返回生成的答案
 
+def exact_link_url(question, url_count):
+    search_data = call_search_engine(question)
+    list = []
+    for i in range(url_count):
+        # print(i)
+        search_result = search_data['questions_and_answers'][i]
+        if "link" in search_result:
+            source = search_result["link"]
+            list.append(source)
+            # print(i, source)
+    return list
+
 
 # @markdown ---
 model_name = "gpt-3.5-turbo" #@param ["gpt-4-0125-preview", "gpt-4-turbo-preview", "gpt-4-1106-preview", "gpt-4", "gpt-4-0613", "gpt-4-32k", "gpt-4-32k-0613", "gpt-3.5-turbo-1106", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-instruct", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-0301"]
@@ -386,9 +302,4 @@ answer = call_freshprompt(model_name, question, check_premise=check_premise)
 
 # Directly output the answer
 print(answer)
-'''
-if __name__ == '__main__':
-    url_list = exact_link_url("What year is considered Albert Einstein's annus mirabilis?", 3)
-    print(url_list)
 
-'''
