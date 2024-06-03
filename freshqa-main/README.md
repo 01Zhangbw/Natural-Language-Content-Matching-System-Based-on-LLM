@@ -222,7 +222,7 @@ test3：测试美国现在的总统
 
 ## 0528-0602
 
-主要对ipynb文件改成了.py文件。并且将这些代码保存在了四个.py文件中。
+原设计：主要对ipynb文件改成了.py文件。并且将这些代码保存在了四个.py文件中。
 
 分别是：
 
@@ -233,3 +233,133 @@ finallinkSolution.py：对于网页爬取，link处理等函数。
 finalmainSolution.py：调用api的函数以及主函数。
 
 formatSolution.py：format格式化相关的函数。
+
+后进行更改。代码地址为：
+
+后因为包的导入冲突问题，故先进行算法的优化以及成功运行。
+
+目前的文件为Thetttask.py和同名的ipynb函数。可以运行成功。与前面的代码所作出的更改为：
+
+1. 对prompt做出了硬编码（freshprompt_demo）：做出更改的原因是：我们的模型是由prompt+question的。但是我们只需要对question进行格式化以及检索增强，而prompt可以先设置为已进行检索增强后的示例，而不用耗费api检索成本进行。【做出的创新点】因此将prompt转化为硬编码格式进行embedding。
+
+```python
+freshprompt_demo="""
+query: What year is considered Albert Einstein's annus mirabilis?
+
+source: quora.com
+date: None
+title: What caused Einstein's annus mirabilis?
+snippet: No. He was smarter. He was so smart that “they” are probably fundamentally incapable of understanding just how “smart” Einstein was. Around 1900, Lord Kelvin, a physicist so brilliant they named a unit after him, famously recommended that young students not study physics, because so little remained to be done. He listed, specifically, two remaining issues to be solved, after which all that remained was to do ever better measurements: the photoelectric effect and the absence of a result in the Michelson-Morley experiment. He might well have added the Ultraviolet Catastrophe. Einstein was the person who solved both those riddles (and the Ultraviolet Catastrophe in the bargain), and the answers were what 20th century physics was all about: relativity and quantum mechanics. These two are arguably the most profound breakthroughs in our understanding of the world around us in all of human history. He basically single-handedly created modern physics. And in addition to that, there is basic…
+highlight: None
+
+source: bbvaopenmind.com
+date: Jun 30, 2015
+title: Einstein's Miracle Year - BBVA OpenMind
+snippet: Einstein's miraculous year: 1905. He published four key studies for our current conception of different aspects of reality: light, matter, ...
+highlight: 1905
+
+source: guides.loc.gov
+date: Nov 06, 2019
+title: Introduction - Annus Mirabilis of Albert Einstein
+snippet: In 1905 Albert Einstein published four groundbreaking papers that revolutionized scientific understanding of the universe.
+highlight: 1905
+
+source: cantorsparadise.com
+date: Jul 18, 2023
+title: Einstein's Miraculous Year: A Summary of the 1905 Annus ...
+snippet: These are the four papers that Albert Einstein published in 1905, which are considered to be the foundation of modern physics.
+highlight: 1905
+
+source: guides.loc.gov
+date: Jan 26, 2024
+title: The 1905 Papers - Annus Mirabilis of Albert Einstein
+snippet: It is an English translation of all his writings, while the second book is where the four 1905 papers were published in the original German. For ...
+highlight: 1905
+
+question: What year is considered Albert Einstein's annus mirabilis?
+answer: As of today May 27, 2024, the most up-to-date and relevant information regarding this query is as follows. 1905 is considered Albert Einstein's annus mirabilis, his miraculous year.
+
+
+query: Which photographer took the most expensive photograph in the world?
+
+source: en.wikipedia.org
+date: None
+title: List
+snippet: 
+Rank,Artist,Date
+1,Man Ray,May 14, 2022
+2,Edward Steichen,Nov 10, 2022
+3,Andreas Gursky,November 8, 2011
+4,Richard Prince,May 12, 2014
+highlight: None
+
+source: all-about-photo.com
+date: Dec 22, 2019
+title: Most expensive photographs ever sold | Photo Article
+snippet: The most expensive photo in history as of December 2014 is $6.5 million! The work of Australian landscape photographer Peter Lik, Phantom is a ...
+highlight: Australian landscape photographer Peter Lik, Phantom
+
+source: all-about-photo.com
+date: Dec 20, 2022
+title: Was the most expensive photograph ever taken was sold for $22 million?
+snippet: The most expensive image ever sold at auction, Le Violon d'Ingres (1924) by Man Ray, which features a nude woman's back superimposed with a violin's f-holes, sold for $12.4 million on May 14th, 2022 at Christie's New York.
+highlight: None
+
+source: barnebys.com
+date: May 15, 2023
+title: The 11 Most Expensive Photographers
+snippet: From Vogue icon Helmut Newton to feminist art pioneer Cindy Sherman, these photographers have produced indelible images that command equally ...
+highlight: Vogue icon Helmut Newton
+
+source: artisanhd.com
+date: Dec 19, 2023
+title: Top 5 Most Expensive Photographs & Why We Love Them
+snippet: Our Top 5 Favorite Most Expensive Photographs · Andreas Gursky: Rhein II (1999) – $4.3M · Edward Steichen: The Flatiron – $11.8M · Richard Prince: ...
+	4.7store rating (134)
+	‎Free 3–9 day delivery
+	‎10
+	day returns
+highlight: Andreas Gursky: Rhein II
+
+question: Which photographer took the most expensive photograph in the world?
+answer: As of today May 27, 2024, the most up-to-date and relevant information regarding this query is as follows. The most expensive photograph in the world is "Le Violon d'Ingres". The photograph was created by Man Ray.
+
+
+"""
+
+```
+
+2. 对url的提取进行函数编写，并且根据questions_and_answers这一属性的异常进行检测（需要考虑的点，不然会报错影响运行）：
+
+```python
+
+# 提取Link url
+def exact_link_url(question, url_count):
+    search_data = call_search_engine(question)
+    url_list = []
+
+    # 确认'questions_and_answers'字段存在并且是列表
+    if 'questions_and_answers' in search_data and isinstance(search_data['questions_and_answers'], list):
+        # 计算实际可用的结果数量
+        available_count = min(url_count, len(search_data['questions_and_answers']))
+
+        for i in range(available_count):
+            search_result = search_data['questions_and_answers'][i]
+            if "link" in search_result:
+                source = search_result["link"]
+                url_list.append(source)
+    
+    return url_list
+```
+
+3. 模型的最终效果（运行Thetttask.ipynb）
+
+![](Figs\SHOW.png)
+
+![](Figs\URL.png)
+
+4. 为了对这一模型进行理解和展示，做出的模型图：
+
+![](Figs\Flowchart.png)
+
+下周工作：对前后端进行设计和完善，争取做出完整的系统。
